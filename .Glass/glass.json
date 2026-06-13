@@ -1,0 +1,13 @@
+{
+      "NetworkTables": {
+        "transitory": {"SmartDashboard": {"open": true}},
+        "types": {"\/FMSInfo": "FMSInfo"}
+      },
+      "NetworkTables Info": {"visible": true},
+      "NetworkTables Settings": {
+        "mode": "Client",
+        "port": 5800,
+        "serverTeam": "172.30.0.1",
+        "visible": false
+      }
+    }
