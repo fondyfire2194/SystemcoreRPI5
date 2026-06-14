@@ -6,14 +6,11 @@ package first.robot;
 
 import static org.wpilib.units.Units.Seconds;
 
-import java.util.Collection;
-import java.util.Set;
-
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Scheduler;
-import org.wpilib.command3.StagedCommandBuilder;
 import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.framework.OpModeRobot;
+import org.wpilib.smartdashboard.SmartDashboard;
 
 import first.robot.subsystems.FeederSubsystem;
 import first.robot.subsystems.ShooterSubsystem;
@@ -40,6 +37,7 @@ public class Robot extends OpModeRobot {
   public CommandGamepad controller = new CommandGamepad(0);
 
   public Robot() {
+  
 
   }
 

@@ -8,7 +8,6 @@ import static org.wpilib.units.Units.Seconds;
 
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
-import org.wpilib.command3.Scheduler;
 import org.wpilib.hardware.hal.CANBusMap;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
@@ -127,13 +126,13 @@ public class FeederSubsystem extends Mechanism {
 
   public Command positionFeederCommand(double value) {
     return run(coroutine -> {
-      targetPosition=value;
+      targetPosition = value;
       while (!inPosition()) {
         positionFeeder(value);
         coroutine.yield();
       }
       stopFeederMotor();
-    }).named("Run Feeder at Velocity ");
+    }).named("Position Feeder ");
   }
 
   public Command feedArtifacts(int quantity, double distance) {
