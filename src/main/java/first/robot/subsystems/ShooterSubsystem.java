@@ -32,6 +32,10 @@ public class ShooterSubsystem extends Mechanism {
 
   private boolean runShooter;
 
+  private int tstctr;
+
+  private int stopctr;
+
   public boolean isRunShooter() {
     return runShooter;
   }
@@ -70,7 +74,6 @@ public class ShooterSubsystem extends Mechanism {
             .feedForward
         // // kV is now in Volts, so we multiply by the nominal voltage (12V)
         .kV(12.0 / 5767, ClosedLoopSlot.kSlot0);
-
   }
 
   public ShooterSubsystem() {
@@ -93,9 +96,10 @@ public class ShooterSubsystem extends Mechanism {
   }
 
   public Command runShooterAtVelocityCommand() {
-    setRunShooter(true);
+    // setRunShooter(true);
     return run(coroutine -> {
-      while (runShooter) {
+      while (isRunShooter()) {
+        SmartDashboard.putNumber("TSTCTR", tstctr++);
         runShooterAtVelocity();
         coroutine.yield();
       }
@@ -104,10 +108,22 @@ public class ShooterSubsystem extends Mechanism {
   }
 
   public void stopShooterMotor() {
+    SmartDashboard.putNumber("ShooterSTOPCTR", stopctr++);
     shooterMotor.stopMotor();
     setRunShooter(false);
     closedLoopController.setSetpoint(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
     // Scheduler.getDefault().cancel(runShooterAtVelocityCommand());
+  }
+
+  public Command stopShooterCommand() {
+    return run(coroutine -> {
+      while (!isStopped()) {
+        stopShooterMotor();
+        setRunShooter(false);
+        coroutine.yield();
+      }
+      stopShooterMotor();
+    }).named("Stop s=Shooter");
   }
 
   public void clearFaults() {
@@ -130,14 +146,13 @@ public class ShooterSubsystem extends Mechanism {
     return Math.abs(targetRPM - getVelocity()) < 100;
   }
 
-
   public void shooterTelemetry() {
     SmartDashboard.putNumber("ShooterPosition", getPosition());
     SmartDashboard.putNumber("ShooterVelocity", getVelocity());
     SmartDashboard.putNumber("ShooterThrottle", shooterMotor.getThrottle());
     SmartDashboard.putNumber("ShooterTemp", shooterMotor.getMotorTemperature().get());
     SmartDashboard.putBoolean("ShooterStopped", isStopped());
-    SmartDashboard.putBoolean("ShooterAtSpeed", atSpeed());      
+    SmartDashboard.putBoolean("ShooterAtSpeed", atSpeed());
     SmartDashboard.putBoolean("RunShooter", isRunShooter());
 
   }

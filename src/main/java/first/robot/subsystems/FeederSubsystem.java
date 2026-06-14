@@ -4,10 +4,14 @@
 
 package first.robot.subsystems;
 
+import static org.wpilib.units.Units.Seconds;
+
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.command3.Scheduler;
 import org.wpilib.hardware.hal.CANBusMap;
+import org.wpilib.math.filter.Debouncer;
+import org.wpilib.math.filter.Debouncer.DebounceType;
 import org.wpilib.smartdashboard.SmartDashboard;
 
 import com.revrobotics.PersistMode;
@@ -30,6 +34,8 @@ public class FeederSubsystem extends Mechanism {
   private SparkClosedLoopController closedLoopController = feederMotor.getClosedLoopController();
 
   private RelativeEncoder encoder = feederMotor.getEncoder();
+
+  private Debouncer inPositionDebouncer = new Debouncer(.1, DebounceType.kRising);
 
   private double targetRPM = 1000;
 
@@ -77,7 +83,7 @@ public class FeederSubsystem extends Mechanism {
         .i(0)
         .d(0)
         .outputRange(-1, 1)
-        .p(0.05, ClosedLoopSlot.kSlot1)
+        .p(0.072, ClosedLoopSlot.kSlot1)
         .i(0, ClosedLoopSlot.kSlot1)
         .d(0, ClosedLoopSlot.kSlot1)
         .outputRange(-1, 1, ClosedLoopSlot.kSlot1).feedForward
@@ -93,8 +99,6 @@ public class FeederSubsystem extends Mechanism {
         PersistMode.kPersistParameters);
     setRunFeeder(false);
     encoder.setPosition(0);
-    // setDefaultCommand(Commands.run(() -> stopFeederMotor()).until(() ->
-    // isStopped()));
   }
 
   public void runFeederMotor(double throttle) {
@@ -106,7 +110,7 @@ public class FeederSubsystem extends Mechanism {
   }
 
   public Command runFeederAtVelocityCommand() {
-    setRunFeeder(true);
+    // setRunFeeder(true);
     return run(coroutine -> {
       while (runFeeder) {
         runFeederAtVelocity();
@@ -121,8 +125,9 @@ public class FeederSubsystem extends Mechanism {
     closedLoopController.setSetpoint(targetPosition, ControlType.kPosition, ClosedLoopSlot.kSlot1);
   }
 
-  public Command posiitonFeederCommand(double value) {
+  public Command positionFeederCommand(double value) {
     return run(coroutine -> {
+      targetPosition=value;
       while (!inPosition()) {
         positionFeeder(value);
         coroutine.yield();
@@ -131,11 +136,33 @@ public class FeederSubsystem extends Mechanism {
     }).named("Run Feeder at Velocity ");
   }
 
+  public Command feedArtifacts(int quantity, double distance) {
+    return run(coroutine -> {
+      for (int i = 0; i < quantity; i++) {
+        coroutine.await(
+            positionFeederCommand(distance));
+        coroutine.wait(Seconds.of(.25));
+        coroutine.await(positionFeederCommand(0));
+        coroutine.wait(Seconds.of(.25));
+      }
+    }).named("Feed Artifacts");
+  }
+
   public void stopFeederMotor() {
     feederMotor.stopMotor();
     setRunFeeder(false);
     closedLoopController.setSetpoint(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-    Scheduler.getDefault().cancel(runFeederAtVelocityCommand());
+  }
+
+  public Command stopFeederCommand() {
+    return run(coroutine -> {
+      while (!isStopped()) {
+        stopFeederMotor();
+        setRunFeeder(false);
+        coroutine.yield();
+      }
+      stopFeederMotor();
+    }).named("Stop s=Shooter");
   }
 
   public void clearFaults() {
@@ -159,7 +186,7 @@ public class FeederSubsystem extends Mechanism {
   }
 
   public boolean inPosition() {
-    return Math.abs(targetPosition - getPosition()) < .1;
+    return inPositionDebouncer.calculate(Math.abs(targetPosition - getPosition()) < .2);
   }
 
   public void feederTelemetry() {
@@ -169,6 +196,7 @@ public class FeederSubsystem extends Mechanism {
     SmartDashboard.putNumber("FeederTemp", feederMotor.getMotorTemperature().get());
     SmartDashboard.putBoolean("FeederStopped", isStopped());
     SmartDashboard.putBoolean("RunFeeder", isRunFeeder());
+    SmartDashboard.putBoolean("FeederInPosition", inPosition());
 
   }
 

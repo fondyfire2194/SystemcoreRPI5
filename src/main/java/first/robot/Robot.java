@@ -4,18 +4,15 @@
 
 package first.robot;
 
-import static org.wpilib.units.Units.Second;
 import static org.wpilib.units.Units.Seconds;
+
+import java.util.Collection;
+import java.util.Set;
 
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Scheduler;
-import org.wpilib.command3.SchedulerEvent.Completed;
-import org.wpilib.command3.SchedulerEvent.Mounted;
-import org.wpilib.command3.SchedulerEvent.Scheduled;
-import org.wpilib.command3.SchedulerEvent.Yielded;
-import org.wpilib.command3.Trigger;
+import org.wpilib.command3.StagedCommandBuilder;
 import org.wpilib.command3.button.CommandGamepad;
-import org.wpilib.driverstation.internal.DriverStationBackend;
 import org.wpilib.framework.OpModeRobot;
 
 import first.robot.subsystems.FeederSubsystem;
@@ -73,11 +70,24 @@ public class Robot extends OpModeRobot {
       coroutine.waitUntil(() -> shooter.atSpeed());
       coroutine.await(Command.noRequirements(coro -> feeder.setRunFeeder(true)).named("SetRunFeeder"));
       coroutine.fork(feeder.runFeederAtVelocityCommand());
-      coroutine.wait(Seconds.of(5));
-      coroutine.fork(Command.noRequirements(coro -> shooter.setRunShooter(false)).named("SetRunShooter"));
-      coroutine.fork(Command.noRequirements(coro -> shooter.setRunShooter(false)).named("SetRunShooter"));
+      coroutine.wait(Seconds.of(2));
+      coroutine.fork(shooter.stopShooterCommand());
+      coroutine.fork(feeder.stopFeederCommand());
 
-    }).named("Scoring Sequence (Advanced)");
+    }).named("Shooting Sequence");
+  }
+
+  public Command shootPositionSequence() {
+    return Command.noRequirements(coroutine -> {
+      coroutine.await(Command.noRequirements(coro -> shooter.setRunShooter(true)).named("SetRunShooter"));
+      coroutine.fork(shooter.runShooterAtVelocityCommand());
+      coroutine.waitUntil(() -> shooter.atSpeed());
+      coroutine.await(feeder.feedArtifacts(5, 4));
+      coroutine.wait(Seconds.of(1));
+      coroutine.await(feeder.positionFeederCommand(0));
+      coroutine.wait(Seconds.of(1));
+      coroutine.fork(shooter.stopShooterCommand());
+    }).named("Shooting Sequence");
   }
 
 }
