@@ -7,7 +7,8 @@ package first.robot;
 import static org.wpilib.units.Units.Seconds;
 
 import org.wpilib.command3.Command;
-import org.wpilib.command3.Scheduler;
+import org.wpilib.command3.StateMachine;
+import org.wpilib.command3.StateMachine.State;
 import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.framework.OpModeRobot;
 import org.wpilib.smartdashboard.SmartDashboard;
@@ -37,7 +38,6 @@ public class Robot extends OpModeRobot {
   public CommandGamepad controller = new CommandGamepad(0);
 
   public Robot() {
-  
 
   }
 
@@ -88,4 +88,40 @@ public class Robot extends OpModeRobot {
     }).named("Shooting Sequence");
   }
 
+  public StateMachine stateMachine = new StateMachine("Shoot Position: ");
+
+  public Command shootPositionState() {
+
+    State reset = stateMachine
+        .addState(Command.noRequirements(coro -> feeder.feederMotor.getEncoder().setPosition(0)).named("Reset"));
+
+    State setRunShooter = stateMachine
+        .addState(Command.noRequirements(coro -> shooter.setRunShooter(true)).named("SetRunShooter"));
+
+    State runShooter = stateMachine
+        .addState(Command.noRequirements(coro -> shooter.runShooterAtVelocity()).named("Run Shooter"));
+
+    State debug = stateMachine
+        .addState(Command.noRequirements(coro -> SmartDashboard.putNumber("Debug", 911)).named("Debug"));
+
+    State positionFeeder = stateMachine
+        .addState(Command.noRequirements(coro -> feeder.feedArtifacts(10, 4)).named("Feed artifacts"));
+
+    State stopShooter = stateMachine
+        .addState(Command.noRequirements(coro -> shooter.stopShooterMotor()).named("Stop Shooter"));
+
+    stateMachine.setInitialState(reset);
+
+    reset.switchTo(setRunShooter).whenComplete();
+
+    setRunShooter.switchTo(runShooter).whenComplete();
+
+    runShooter.switchTo(debug).when(() -> true);
+
+    debug.switchTo(positionFeeder).whenComplete();
+
+    positionFeeder.switchTo(stopShooter).whenComplete();
+
+    return stateMachine;
+  }
 }
