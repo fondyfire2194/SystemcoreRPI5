@@ -7,9 +7,13 @@ package first.robot;
 import static org.wpilib.units.Units.Seconds;
 
 import org.wpilib.command3.Command;
+import org.wpilib.command3.Coroutine;
+import org.wpilib.command3.Scheduler;
 import org.wpilib.command3.StateMachine;
 import org.wpilib.command3.StateMachine.State;
+import org.wpilib.command3.Trigger;
 import org.wpilib.command3.button.CommandGamepad;
+import org.wpilib.driverstation.internal.DriverStationBackend;
 import org.wpilib.framework.OpModeRobot;
 import org.wpilib.smartdashboard.SmartDashboard;
 
@@ -37,7 +41,19 @@ public class Robot extends OpModeRobot {
   public FeederSubsystem feeder = new FeederSubsystem();
   public CommandGamepad controller = new CommandGamepad(0);
 
+  public Trigger startShooter = new Trigger(() -> DriverStationBackend.isEnabled() && shooter.isRunShooter());
+  public Trigger startFeeder = new Trigger(() -> DriverStationBackend.isEnabled() && feeder.isRunFeeder());
+
   public Robot() {
+    startShooter.onTrue(shooter.runShooterAtVelocityCommand());
+    startShooter.onFalse(Command
+        .noRequirements(coro -> Scheduler.getDefault().cancel(shooter.runShooterAtVelocityCommand()))
+        .named("Cancel Run Shooter"));
+
+    startFeeder.onTrue(feeder.runFeederAtVelocityCommand());
+    startFeeder.onFalse(Command
+        .noRequirements(coro -> Scheduler.getDefault().cancel(feeder.runFeederAtVelocityCommand()))
+        .named("Cancel Run Feeder"));
 
   }
 
@@ -64,10 +80,10 @@ public class Robot extends OpModeRobot {
   public Command shootSequence() {
     return Command.noRequirements(coroutine -> {
       coroutine.await(Command.noRequirements(coro -> shooter.setRunShooter(true)).named("SetRunShooter"));
-      coroutine.fork(shooter.runShooterAtVelocityCommand());
+      // coroutine.fork(shooter.runShooterAtVelocityCommand());
       coroutine.waitUntil(() -> shooter.atSpeed());
       coroutine.await(Command.noRequirements(coro -> feeder.setRunFeeder(true)).named("SetRunFeeder"));
-      coroutine.fork(feeder.runFeederAtVelocityCommand());
+      // coroutine.fork(feeder.runFeederAtVelocityCommand());
       coroutine.wait(Seconds.of(2));
       coroutine.fork(shooter.stopShooterCommand());
       coroutine.fork(feeder.stopFeederCommand());
@@ -78,7 +94,7 @@ public class Robot extends OpModeRobot {
   public Command shootPositionSequence() {
     return Command.noRequirements(coroutine -> {
       coroutine.await(Command.noRequirements(coro -> shooter.setRunShooter(true)).named("SetRunShooter"));
-      coroutine.fork(shooter.runShooterAtVelocityCommand());
+      // coroutine.fork(shooter.runShooterAtVelocityCommand());
       coroutine.waitUntil(() -> shooter.atSpeed());
       coroutine.await(feeder.feedArtifacts(5, 4));
       coroutine.wait(Seconds.of(1));
@@ -98,29 +114,21 @@ public class Robot extends OpModeRobot {
     State setRunShooter = stateMachine
         .addState(Command.noRequirements(coro -> shooter.setRunShooter(true)).named("SetRunShooter"));
 
-    State runShooter = stateMachine
-        .addState(Command.noRequirements(coro -> shooter.runShooterAtVelocity()).named("Run Shooter"));
-
-    State debug = stateMachine
-        .addState(Command.noRequirements(coro -> SmartDashboard.putNumber("Debug", 911)).named("Debug"));
-
-    State positionFeeder = stateMachine
-        .addState(Command.noRequirements(coro -> feeder.feedArtifacts(10, 4)).named("Feed artifacts"));
+    State positionFeeder = stateMachine.addState(feeder.feedArtifacts(6, 5));
 
     State stopShooter = stateMachine
-        .addState(Command.noRequirements(coro -> shooter.stopShooterMotor()).named("Stop Shooter"));
+        .addState(Command.noRequirements(coro -> shooter.setRunShooter(false)).named("Stop Shooter"));
+
+      // set state switching targets  
 
     stateMachine.setInitialState(reset);
 
     reset.switchTo(setRunShooter).whenComplete();
 
-    setRunShooter.switchTo(runShooter).whenComplete();
-
-    runShooter.switchTo(debug).when(() -> true);
-
-    debug.switchTo(positionFeeder).whenComplete();
+    setRunShooter.switchTo(positionFeeder).whenComplete();
 
     positionFeeder.switchTo(stopShooter).whenComplete();
+
 
     return stateMachine;
   }

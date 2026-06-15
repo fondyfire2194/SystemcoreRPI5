@@ -32,8 +32,8 @@ public class TeleopRunShooter extends PeriodicOpMode {
         .onFalse(Command.noRequirements(coro -> robot.shooter.shooterMotor.setThrottle(0.)).named("Jog Shooter stop"));
 
     robot.controller.northFace()
-        .onTrue(Command.noRequirements(coro -> robot.shooter.setRunShooter(true)).named("SetRunShooter"))
-        .onFalse(robot.shooter.runShooterAtVelocityCommand());
+        .onTrue(Command.noRequirements(coro -> robot.shooter.setRunShooter(true)).named("SetRunShooter"));
+      //  .onFalse(robot.shooter.runShooterAtVelocityCommand());
 
     robot.controller.southFace()
         .onTrue(Command.noRequirements(coro -> robot.shooter.setRunShooter(false)).named("Stop Shooter"));

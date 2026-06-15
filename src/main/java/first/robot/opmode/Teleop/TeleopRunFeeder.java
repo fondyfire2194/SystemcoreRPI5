@@ -28,12 +28,11 @@ public class TeleopRunFeeder extends PeriodicOpMode {
         .onFalse(Command.noRequirements(coro -> robot.feeder.feederMotor.setThrottle(0.)).named("Jog Feeder stop"));
 
     robot.controller.northFace()
-        .onTrue(Command.noRequirements(coro -> robot.feeder.setRunFeeder(true)).named("SetRunFeeder"))
-        .onFalse(robot.feeder.runFeederAtVelocityCommand());
+        .onTrue(Command.noRequirements(coro -> robot.feeder.setRunFeeder(true)).named("SetRunFeeder"));
+    // .onFalse(robot.feeder.runFeederAtVelocityCommand());
 
     robot.controller.southFace()
         .onTrue(Command.noRequirements(coro -> robot.feeder.setRunFeeder(false)).named("Stop Feeder"));
-
     robot.controller.eastFace().onTrue(
         Command.noRequirements(coro -> robot.feeder.setTargetPosition(robot.feeder.getTargetPosition() + 20))
             .named("Position Feeder +20"))

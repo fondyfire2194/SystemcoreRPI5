@@ -6,6 +6,8 @@ package first.robot.subsystems;
 
 import static org.wpilib.units.Units.Seconds;
 
+import java.util.InputMismatchException;
+
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.hardware.hal.CANBusMap;
@@ -53,6 +55,8 @@ public class FeederSubsystem extends Mechanism {
   public static double positionConversionFactor = 1;
 
   private boolean runFeeder;
+
+  public int artifactsDone;
 
   public boolean isRunFeeder() {
     return runFeeder;
@@ -119,16 +123,15 @@ public class FeederSubsystem extends Mechanism {
     }).named("Run Feeder at Velocity ");
   }
 
-  public void positionFeeder(double value) {
-    targetPosition = value;
+  public void positionFeeder() {
     closedLoopController.setSetpoint(targetPosition, ControlType.kPosition, ClosedLoopSlot.kSlot1);
   }
 
   public Command positionFeederCommand(double value) {
+    targetPosition = value;
     return run(coroutine -> {
-      targetPosition = value;
       while (!inPosition()) {
-        positionFeeder(value);
+        positionFeeder();
         coroutine.yield();
       }
       stopFeederMotor();
@@ -143,9 +146,13 @@ public class FeederSubsystem extends Mechanism {
         coroutine.wait(Seconds.of(.25));
         coroutine.await(positionFeederCommand(0));
         coroutine.wait(Seconds.of(.25));
+        artifactsDone++;
+        SmartDashboard.putNumber("ArtDone", artifactsDone);
       }
     }).named("Feed Artifacts");
   }
+
+  
 
   public void stopFeederMotor() {
     feederMotor.stopMotor();
@@ -193,6 +200,8 @@ public class FeederSubsystem extends Mechanism {
     SmartDashboard.putNumber("FeederVelocity", getVelocity());
     SmartDashboard.putNumber("FeederThrottle", feederMotor.getThrottle());
     SmartDashboard.putNumber("FeederTemp", feederMotor.getMotorTemperature().get());
+    SmartDashboard.putNumber("FeederTarget", targetPosition);
+
     SmartDashboard.putBoolean("FeederStopped", isStopped());
     SmartDashboard.putBoolean("RunFeeder", isRunFeeder());
     SmartDashboard.putBoolean("FeederInPosition", inPosition());
