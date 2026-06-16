@@ -7,15 +7,16 @@ package first.robot;
 import static org.wpilib.units.Units.Seconds;
 
 import org.wpilib.command3.Command;
-import org.wpilib.command3.Coroutine;
 import org.wpilib.command3.Scheduler;
 import org.wpilib.command3.StateMachine;
 import org.wpilib.command3.StateMachine.State;
 import org.wpilib.command3.Trigger;
 import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.driverstation.internal.DriverStationBackend;
+import org.wpilib.epilogue.logging.EpilogueBackend;
 import org.wpilib.framework.OpModeRobot;
-import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.hardware.power.PowerDistribution;
+import org.wpilib.hardware.power.PowerDistribution.ModuleType;
 
 import first.robot.subsystems.FeederSubsystem;
 import first.robot.subsystems.ShooterSubsystem;
@@ -39,6 +40,7 @@ public class Robot extends OpModeRobot {
    */
   public ShooterSubsystem shooter = new ShooterSubsystem();
   public FeederSubsystem feeder = new FeederSubsystem();
+  public PowerDistribution pdh = new PowerDistribution(0, 1, ModuleType.CTRE);
   public CommandGamepad controller = new CommandGamepad(0);
 
   public Trigger startShooter = new Trigger(() -> DriverStationBackend.isEnabled() && shooter.isRunShooter());
@@ -119,7 +121,7 @@ public class Robot extends OpModeRobot {
     State stopShooter = stateMachine
         .addState(Command.noRequirements(coro -> shooter.setRunShooter(false)).named("Stop Shooter"));
 
-      // set state switching targets  
+    // set state switching targets
 
     stateMachine.setInitialState(reset);
 
@@ -128,7 +130,6 @@ public class Robot extends OpModeRobot {
     setRunShooter.switchTo(positionFeeder).whenComplete();
 
     positionFeeder.switchTo(stopShooter).whenComplete();
-
 
     return stateMachine;
   }

@@ -9,6 +9,7 @@ import org.wpilib.command3.Scheduler;
 import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.opmode.PeriodicOpMode;
 import org.wpilib.opmode.Teleop;
+import org.wpilib.smartdashboard.SmartDashboard;
 
 import first.robot.Robot;
 
@@ -61,6 +62,8 @@ public class TeleopRunShooter extends PeriodicOpMode {
 
     Scheduler.getDefault().run();
     robot.shooter.shooterTelemetry();
+
+    SmartDashboard.putNumber("PDH Volts", robot.pdh.getVoltage());
     /*
      * Called periodically
      * 

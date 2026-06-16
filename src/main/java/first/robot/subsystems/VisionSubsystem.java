@@ -23,9 +23,24 @@ public class VisionSubsystem extends Mechanism {
 
   public double lastFrontHeartbeat;
 
+  public int aprilTagPipeline =0;
+  public int colorPipeline = 1;
+  public int detectorPipeline = 2;
+
+  public String[] pipelineName ={"AprilTag", "Color","Detector"};
+
+
   public VisionSubsystem() {
     Cameras frontCam = CameraConstants.frontCamera;
-    frontName = frontCam.camname;
+    frontName = frontCam.camname;  
+  }
+
+  public int getPipelineNumber(String camname){
+    return (int)LimelightHelpers_2027.getCurrentPipelineIndex(camname);
+  }
+
+  public String getPipelineType(String camname){
+    return LimelightHelpers_2027.getCurrentPipelineType(camname);
   }
 
   public boolean hasTarget() {
