@@ -19,6 +19,7 @@ import org.wpilib.hardware.power.PowerDistribution;
 import org.wpilib.hardware.power.PowerDistribution.ModuleType;
 
 import first.robot.subsystems.FeederSubsystem;
+import first.robot.subsystems.KrakenSubsystem;
 import first.robot.subsystems.ShooterSubsystem;
 
 /**
@@ -41,6 +42,7 @@ public class Robot extends OpModeRobot {
   public ShooterSubsystem shooter = new ShooterSubsystem();
   public FeederSubsystem feeder = new FeederSubsystem();
   public PowerDistribution pdh = new PowerDistribution(0, 1, ModuleType.CTRE);
+  public KrakenSubsystem  kraken= new KrakenSubsystem();
   public CommandGamepad controller = new CommandGamepad(0);
 
   public Trigger startShooter = new Trigger(() -> DriverStationBackend.isEnabled() && shooter.isRunShooter());
