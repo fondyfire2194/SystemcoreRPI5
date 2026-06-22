@@ -6,7 +6,6 @@ package first.robot.subsystems;
 
 import static org.wpilib.units.Units.Seconds;
 
-import java.util.InputMismatchException;
 
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;

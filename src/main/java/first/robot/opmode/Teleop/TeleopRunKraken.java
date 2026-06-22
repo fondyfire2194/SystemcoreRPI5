@@ -24,47 +24,46 @@ public class TeleopRunKraken extends PeriodicOpMode {
         .onFalse(Command.noRequirements(coro -> robot.kraken.x60Motor.setThrottle(0.)).named("Jog Kraken stop"));
 
     robot.controller.rightBumper().onTrue(
-         Command.noRequirements(coro -> robot.kraken.x60Motor.setThrottle(-.25)).named("Jog Kraken minus"))
+        Command.noRequirements(coro -> robot.kraken.x60Motor.setThrottle(-.25)).named("Jog Kraken minus"))
         .onFalse(Command.noRequirements(coro -> robot.kraken.x60Motor.setThrottle(0.)).named("Jog Kraken stop"));
 
     robot.controller.northFace()
-        .onTrue(Command.noRequirements(coro -> robot.feeder.setRunFeeder(true)).named("SetRunFeeder"));
-    // .onFalse(robot.feeder.runFeederAtVelocityCommand());
+        .onTrue(Command.noRequirements(coro -> robot.kraken.setRunKraken(true)).named("SetRunKraken"));
 
     robot.controller.southFace()
-        .onTrue(Command.noRequirements(coro -> robot.feeder.setRunFeeder(false)).named("Stop Feeder"));
+        .onTrue(Command.noRequirements(coro -> robot.kraken.setRunKraken(false)).named("Stop Kraken"));
     robot.controller.eastFace().onTrue(
-        Command.noRequirements(coro -> robot.feeder.setTargetPosition(robot.feeder.getTargetPosition() + 20))
-            .named("Position Feeder +20"))
-        .onFalse(robot.feeder.positionFeederCommand(20));
+        Command.noRequirements(coro -> robot.kraken.setTargetPosition(robot.kraken.getTargetPosition() + 20))
+            .named("Position Kraken +20"))
+        .onFalse(robot.kraken.positionKrakenCommand(20));
 
     robot.controller.westFace().onTrue(
-        Command.noRequirements(coro -> robot.feeder.setTargetPosition(0)).named("Position Feeder 0"))
-        .onFalse(robot.feeder.positionFeederCommand(0));
+        Command.noRequirements(coro -> robot.kraken.setTargetPosition(0)).named("Position Kraken 0"))
+        .onFalse(robot.kraken.positionKrakenCommand(0));
 
-    robot.feeder.setRunFeeder(false);
-    robot.shooter.setRunShooter(false);
+    robot.kraken.setRunKraken(false);
+
   }
 
   @Override
   public void disabledPeriodic() {
     /* Called periodically (on every DS packet) while the robot is disabled. */
     Scheduler.getDefault().run();
-    robot.feeder.feederTelemetry();
+    robot.kraken.krakenTelemetry();
 
   }
 
   @Override
   public void start() {
     /* Called once when the robot is enabled. */
-    robot.feeder.setRunFeeder(false);
+    robot.kraken.setRunKraken(false);
   }
 
   @Override
   public void periodic() {
     Scheduler.getDefault().run();
-    robot.feeder.feederTelemetry();
-robot.kraken.krakenTelemetry();
+
+    robot.kraken.krakenTelemetry();
     /*
      * Called periodically
      * 
@@ -76,7 +75,7 @@ robot.kraken.krakenTelemetry();
   @Override
   public void end() {
     /* Called when the robot is disabled (after previously being enabled). */
-    robot.feeder.setRunFeeder(false);
+    robot.kraken.setRunKraken(false);
     robot.close();
     Scheduler.getDefault().cancelAll();
   }
@@ -84,7 +83,7 @@ robot.kraken.krakenTelemetry();
   @Override
   public void close() {
     robot.close();
-    robot.feeder.setRunFeeder(false);
+    robot.kraken.setRunKraken(false);
     Scheduler.getDefault().cancelAll();
     /*
      * Called when the opmode is de-selected / no additional methods will be called.

@@ -22,7 +22,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 
 public class KrakenSubsystem extends Mechanism {
-  /** Creates a new feederSubsystem. */
+  /** Creates a new Kraken Subsystem. */
 
   public TalonFX x60Motor = new TalonFX(10, CANBus.systemcore(0));
   private TalonFXConfiguration x60Config = new TalonFXConfiguration();
@@ -46,16 +46,16 @@ public class KrakenSubsystem extends Mechanism {
 
   public static double positionConversionFactor = 1;
 
-  private boolean runFeeder;
+  private boolean runKraken;
 
   public int artifactsDone;
 
-  public boolean isRunFeeder() {
-    return runFeeder;
+  public boolean isRunKraken() {
+    return runKraken;
   }
 
-  public void setRunFeeder(boolean runFeeder) {
-    this.runFeeder = runFeeder;
+  public void setRunKraken(boolean runKraken) {
+    this.runKraken = runKraken;
   }
 
   public KrakenSubsystem() {
@@ -83,12 +83,25 @@ public class KrakenSubsystem extends Mechanism {
 
     x60Motor.getConfigurator().apply(x60Config);
 
-  
   }
 
+  public void runKrakenAtVelocity() {
+    x60Motor.setControl(m_positionVoltage.withVelocity(targetRPM));
+  }
+
+  public Command runKrakenAtVelocityCommand() {
+    // setRunFeeder(true);
+    return run(coroutine -> {
+      while (runKraken) {
+        runKrakenAtVelocity();
+        coroutine.yield();
+      }
+      stopKrakenMotor();
+    }).named("Run Feeder at Velocity ");
+  }
 
   public void positionKraken() {
-          x60Motor.setControl(m_positionVoltage.withPosition(targetPosition));
+    x60Motor.setControl(m_positionVoltage.withPosition(targetPosition));
   }
 
   public Command positionKrakenCommand(double value) {
@@ -102,11 +115,11 @@ public class KrakenSubsystem extends Mechanism {
     }).named("Position Feeder ");
   }
 
-  public void stopKrakenMotor(){
+  public void stopKrakenMotor() {
     x60Motor.stopMotor();
   }
 
-   public void clearFaults() {
+  public void clearFaults() {
     x60Motor.clearStickyFaults();
   }
 
@@ -126,15 +139,23 @@ public class KrakenSubsystem extends Mechanism {
     return Math.abs(targetRPM - getVelocity()) < 100;
   }
 
-
-   public boolean inPosition() {
+  public boolean inPosition() {
     return inPositionDebouncer.calculate(Math.abs(targetPosition - getPosition()) < .2);
   }
 
   public void krakenTelemetry() {
     SmartDashboard.putNumber("KrakenPosition", x60Motor.getPosition().getValueAsDouble());
+ SmartDashboard.putNumber("KrakenVelocity", x60Motor.getVelocity().getValueAsDouble());
+
+ 
+    SmartDashboard.putNumber("Kraken Throttle", x60Motor.getThrottle());
+    SmartDashboard.putNumber("KrakenTemp", x60Motor.getDeviceTemp().getValueAsDouble());
+    SmartDashboard.putNumber("FeederTarget", targetPosition);
+
+    SmartDashboard.putBoolean("FeederStopped", isStopped());
+    SmartDashboard.putBoolean("RunKraken", isRunKraken());
+    SmartDashboard.putBoolean("KrakenInPosition", inPosition());
 
   }
-
 
 }

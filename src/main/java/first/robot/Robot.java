@@ -13,7 +13,6 @@ import org.wpilib.command3.StateMachine.State;
 import org.wpilib.command3.Trigger;
 import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.driverstation.internal.DriverStationBackend;
-import org.wpilib.epilogue.logging.EpilogueBackend;
 import org.wpilib.framework.OpModeRobot;
 import org.wpilib.hardware.power.PowerDistribution;
 import org.wpilib.hardware.power.PowerDistribution.ModuleType;
@@ -42,11 +41,12 @@ public class Robot extends OpModeRobot {
   public ShooterSubsystem shooter = new ShooterSubsystem();
   public FeederSubsystem feeder = new FeederSubsystem();
   public PowerDistribution pdh = new PowerDistribution(0, 1, ModuleType.CTRE);
-  public KrakenSubsystem  kraken= new KrakenSubsystem();
+  public KrakenSubsystem kraken = new KrakenSubsystem();
   public CommandGamepad controller = new CommandGamepad(0);
 
   public Trigger startShooter = new Trigger(() -> DriverStationBackend.isEnabled() && shooter.isRunShooter());
   public Trigger startFeeder = new Trigger(() -> DriverStationBackend.isEnabled() && feeder.isRunFeeder());
+  public Trigger startKraken = new Trigger(() -> DriverStationBackend.isEnabled() && kraken.isRunKraken());
 
   public Robot() {
     startShooter.onTrue(shooter.runShooterAtVelocityCommand());
@@ -58,6 +58,11 @@ public class Robot extends OpModeRobot {
     startFeeder.onFalse(Command
         .noRequirements(coro -> Scheduler.getDefault().cancel(feeder.runFeederAtVelocityCommand()))
         .named("Cancel Run Feeder"));
+
+    startKraken.onTrue(kraken.runKrakenAtVelocityCommand());
+    startKraken.onFalse(Command
+        .noRequirements(coro -> Scheduler.getDefault().cancel(kraken.runKrakenAtVelocityCommand()))
+        .named("Cancel Run Kraken"));
 
   }
 
