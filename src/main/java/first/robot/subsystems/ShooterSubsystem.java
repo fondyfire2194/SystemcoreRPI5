@@ -4,6 +4,8 @@
 
 package first.robot.subsystems;
 
+import static org.wpilib.units.Units.Seconds;
+
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.hardware.hal.CANBusMap;
@@ -123,7 +125,27 @@ public class ShooterSubsystem extends Mechanism {
         coroutine.yield();
       }
       stopShooterMotor();
-    }).named("Stop s=Shooter");
+    }).named("Stop Shooter");
+  }
+
+  public Command cycleShooterSpeedUp(double rpmChange, int numberChanges) {
+    return run(coroutine -> {
+      for (int i = 0; i < numberChanges; i++) {
+        runShooterAtVelocity();
+        targetRPM += rpmChange;
+        coroutine.wait(Seconds.of(.25));
+      }
+    }).named("Cycle Shooter Speed Up");
+  }
+
+  public Command cycleShooterSpeedDown(double rpmChange, int numberChanges) {
+    return run(coroutine -> {
+      for (int i = 0; i < numberChanges; i++) {
+        runShooterAtVelocity();
+        targetRPM -= rpmChange;
+        coroutine.wait(Seconds.of(.25));
+      }
+    }).named("Cycle Shooter Speed Down");
   }
 
   public void clearFaults() {

@@ -140,4 +140,29 @@ public class Robot extends OpModeRobot {
 
     return stateMachine;
   }
+
+  public Command krakenSpeedSequence(double rpmChange, int numberChanges) {
+    return Command.noRequirements(coroutine -> {
+      coroutine.await(Command.noRequirements(coro -> kraken.setRunKraken(true)).named("SetRunKraken"));
+      coroutine.waitUntil(() -> kraken.atSpeed());
+      coroutine.await(kraken.cycleKrakenSpeedUp(rpmChange, numberChanges));
+      coroutine.wait(Seconds.of(1));
+      coroutine.await(kraken.cycleKrakenSpeedDown(rpmChange, numberChanges));      
+      coroutine.fork(kraken.stopKrakenCommand());
+    }).named("Kraken Speed Sequence");
+
+  }
+
+   public Command shooterSpeedSequence(double rpmChange, int numberChanges) {
+    return Command.noRequirements(coroutine -> {
+      coroutine.await(Command.noRequirements(coro -> shooter.setRunShooter(true)).named("SetRunShooter"));
+      coroutine.waitUntil(() -> shooter.atSpeed());
+      coroutine.await(shooter.cycleShooterSpeedUp(rpmChange, numberChanges));
+      coroutine.wait(Seconds.of(1));
+      coroutine.await(shooter.cycleShooterSpeedDown(rpmChange, numberChanges));      
+      coroutine.fork(shooter.stopShooterCommand());
+    }).named("Shooter Speed Sequence");
+
+  }
+
 }

@@ -9,12 +9,12 @@ import org.wpilib.opmode.Autonomous;
 import org.wpilib.opmode.PeriodicOpMode;
 import first.robot.Robot;
 
-@Autonomous(name = "My Auto State Machine", group = "Group 1")
-public class MyAutoStateMachine extends PeriodicOpMode {
+@Autonomous(name = "Auto State Machine", group = "Group 1")
+public class AutoStateMachine extends PeriodicOpMode {
   private final Robot robot;
 
   /** The Robot instance is passed into the opmode via the constructor. */
-  public MyAutoStateMachine(Robot robot) {
+  public AutoStateMachine(Robot robot) {
     this.robot = robot;
   }
 

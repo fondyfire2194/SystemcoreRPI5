@@ -34,6 +34,14 @@ public class KrakenSubsystem extends Mechanism {
 
   private double targetRPM = 1000;
 
+  public double getTargetRPM() {
+    return targetRPM;
+  }
+
+  public void setTargetRPM(double targetRPM) {
+    this.targetRPM = targetRPM;
+  }
+
   private double targetPosition = 0;
 
   public double getTargetPosition() {
@@ -119,6 +127,38 @@ public class KrakenSubsystem extends Mechanism {
     x60Motor.stopMotor();
   }
 
+  public Command stopKrakenCommand() {
+    return run(coroutine -> {
+      while (!isStopped()) {
+        stopKrakenMotor();
+        coroutine.yield();
+      }
+      stopKrakenMotor();
+    }).named("Stop Kraken");
+  }
+
+  public Command cycleKrakenSpeedUp(double rpmChange, int numberChanges) {
+    return run(coroutine -> {
+      for (int i = 0; i < numberChanges; i++) {
+        runKrakenAtVelocity();
+        targetRPM += rpmChange;
+        coroutine.wait(Seconds.of(.25));
+      }
+    }).named("Cycle Kraken Speed Up");
+  }
+  
+public Command cycleKrakenSpeedDown(double rpmChange, int numberChanges) {
+    return run(coroutine -> {
+      for (int i = 0; i < numberChanges; i++) {
+        runKrakenAtVelocity();
+        targetRPM -= rpmChange;
+        coroutine.wait(Seconds.of(.25));
+      }
+    }).named("Cycle Kraken Speed Down");
+  }
+
+
+
   public void clearFaults() {
     x60Motor.clearStickyFaults();
   }
@@ -145,12 +185,11 @@ public class KrakenSubsystem extends Mechanism {
 
   public void krakenTelemetry() {
     SmartDashboard.putNumber("KrakenPosition", x60Motor.getPosition().getValueAsDouble());
- SmartDashboard.putNumber("KrakenVelocity", x60Motor.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("KrakenVelocity", x60Motor.getVelocity().getValueAsDouble());
 
- 
     SmartDashboard.putNumber("Kraken Throttle", x60Motor.getThrottle());
     SmartDashboard.putNumber("KrakenTemp", x60Motor.getDeviceTemp().getValueAsDouble());
-    SmartDashboard.putNumber("FeederTarget", targetPosition);
+    SmartDashboard.putNumber("KrakenTargetRPM", targetRPM);
 
     SmartDashboard.putBoolean("FeederStopped", isStopped());
     SmartDashboard.putBoolean("RunKraken", isRunKraken());
