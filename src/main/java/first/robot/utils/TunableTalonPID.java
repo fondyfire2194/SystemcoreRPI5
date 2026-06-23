@@ -10,7 +10,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
 
-public class TunablePID {
+public class TunableTalonPID {
 
   public static void create(String key, TalonFX motor, TalonFXConfiguration defaultConfig) {
     DogLog.tunable(key + "/kP", defaultConfig.Slot0.kP, newP ->
@@ -36,5 +36,5 @@ public class TunablePID {
     );
   }
 
-  private TunablePID() {}
+  private TunableTalonPID() {}
 }
