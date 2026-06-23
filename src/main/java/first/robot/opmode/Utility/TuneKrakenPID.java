@@ -2,48 +2,58 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package first.robot.opmode.Auto;
+package first.robot.opmode.Utility;
 
 import org.wpilib.command3.Scheduler;
-import org.wpilib.opmode.Autonomous;
 import org.wpilib.opmode.PeriodicOpMode;
+import org.wpilib.opmode.Utility;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import first.robot.Robot;
+import first.robot.utils.TunablePID;
 
-@Autonomous(name = "Shooter Speed Auto", group = "Group 1")
-public class ShooterSpeedAuto extends PeriodicOpMode {
+@Utility(name = "Utility Tune Kraken", group = "Group 2")
+public class TuneKrakenPID extends PeriodicOpMode {
   private final Robot robot;
 
   /** The Robot instance is passed into the opmode via the constructor. */
-  public ShooterSpeedAuto(Robot robot) {
+  public TuneKrakenPID(Robot robot) {
     this.robot = robot;
-  }
-
-  @Override
-  public void start() {
-    /* Called once when the robot is enabled. */
-    Scheduler.getDefault().run();
-    Scheduler.getDefault().schedule(robot.shooterSpeedSequence(100, 25));
+    TunablePID.create("KrakenX60", robot.kraken.x60Motor, new TalonFXConfiguration());
 
   }
 
-  /*
-   * This method runs periodically, using the same period as the Robot instance.
-   *
-   * Additional periodic methods may be configured with addPeriodic(),
-   * which can have periods that differ from the main Robot instance.
-   */
   @Override
-  public void periodic() {
-    // Put custom auto code here
+  public void disabledPeriodic() {
+    /* Called periodically (on every DS packet) while the robot is disabled. */
     Scheduler.getDefault().run();
     robot.kraken.krakenTelemetry();
 
   }
 
   @Override
+  public void start() {
+    /* Called once when the robot is enabled. */
+    robot.kraken.setRunKraken(false);
+  }
+
+  @Override
+  public void periodic() {
+    Scheduler.getDefault().run();
+
+    robot.kraken.krakenTelemetry();
+    /*
+     * Called periodically
+     * 
+     * 
+     * (set time interval) while the robot is enabled.
+     */
+  }
+
+  @Override
   public void end() {
     /* Called when the robot is disabled (after previously being enabled). */
+    robot.kraken.setRunKraken(false);
     robot.close();
     Scheduler.getDefault().cancelAll();
   }
@@ -51,6 +61,7 @@ public class ShooterSpeedAuto extends PeriodicOpMode {
   @Override
   public void close() {
     robot.close();
+    robot.kraken.setRunKraken(false);
     Scheduler.getDefault().cancelAll();
     /*
      * Called when the opmode is de-selected / no additional methods will be called.

@@ -9,7 +9,7 @@ import org.wpilib.opmode.Autonomous;
 import org.wpilib.opmode.PeriodicOpMode;
 import first.robot.Robot;
 
-@Autonomous(name = "Kraken Speed Auto", group = "Group 2")
+@Autonomous(name = "Kraken Speed Auto", group = "Group 1")
 public class KrakenSpeedAuto extends PeriodicOpMode {
   private final Robot robot;
 

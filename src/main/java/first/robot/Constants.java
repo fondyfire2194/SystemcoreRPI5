@@ -7,8 +7,6 @@ package first.robot;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.util.Units;
-import org.wpilib.networktables.NetworkTableInstance;
-import org.wpilib.networktables.StructArrayPublisher;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -88,8 +86,8 @@ public final class Constants {
         true);
 
   
-    public static StructArrayPublisher<Pose3d> arrayPublisher = NetworkTableInstance.getDefault()
-        .getStructArrayTopic("Camposes", Pose3d.struct).publish();
+    // public static StructArrayPublisher<Pose3d> arrayPublisher = NetworkTableInstance.getDefault()
+    //     .getStructArrayTopic("Camposes", Pose3d.struct).publish();
 
 
     public static int apriltagPipeline = 0;
