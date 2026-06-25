@@ -8,9 +8,8 @@ import org.wpilib.command3.Scheduler;
 import org.wpilib.opmode.PeriodicOpMode;
 import org.wpilib.opmode.Utility;
 
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import dev.doglog.DogLog;
 import first.robot.Robot;
-import first.robot.utils.TunableTalonPID;
 
 @Utility(name = "Utility Tune Kraken", group = "Group 2")
 public class TuneKrakenPID extends PeriodicOpMode {
@@ -19,7 +18,8 @@ public class TuneKrakenPID extends PeriodicOpMode {
   /** The Robot instance is passed into the opmode via the constructor. */
   public TuneKrakenPID(Robot robot) {
     this.robot = robot;
-    TunableTalonPID.create("KrakenX60", robot.kraken.x60Motor, new TalonFXConfiguration());
+    // DogLog.tunable("" + "/kP", robot.kraken.x60Config.Slot0.kP,
+    //     newP -> robot.kraken.x60Motor.getConfigurator().apply(robot.kraken.x60Config.Slot0.withKP(newP)));
 
   }
 

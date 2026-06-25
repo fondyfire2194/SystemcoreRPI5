@@ -25,7 +25,7 @@ public class KrakenSubsystem extends Mechanism {
   /** Creates a new Kraken Subsystem. */
 
   public TalonFX x60Motor = new TalonFX(10, CANBus.systemcore(0));
-  private TalonFXConfiguration x60Config = new TalonFXConfiguration();
+  public TalonFXConfiguration x60Config = new TalonFXConfiguration();
   private final CurrentLimitsConfigs m_currentLimits = new CurrentLimitsConfigs();
   /* Start at position 0, use slot 0 */
   private final PositionVoltage m_positionVoltage = new PositionVoltage(0).withSlot(0);
@@ -80,7 +80,7 @@ public class KrakenSubsystem extends Mechanism {
     x60Config.Slot1.kD = 6; // A velocity of 1 rps results in 6 A output
 
     m_currentLimits.withSupplyCurrentLowerLimit(Amps.of(20)) // Default limit of 70 A
-        .withSupplyCurrentLimit(Amps.of(150)) // Reduce the limit to 40 A if we've limited to 70 A...
+        .withSupplyCurrentLimit(Amps.of(40)) // Reduce the limit to 40 A if we've limited to 70 A...
         .withSupplyCurrentLowerTime(Seconds.of(1.0)) // ...for at least 1 second
         .withSupplyCurrentLimitEnable(true); // And enable it
 
@@ -146,8 +146,8 @@ public class KrakenSubsystem extends Mechanism {
       }
     }).named("Cycle Kraken Speed Up");
   }
-  
-public Command cycleKrakenSpeedDown(double rpmChange, int numberChanges) {
+
+  public Command cycleKrakenSpeedDown(double rpmChange, int numberChanges) {
     return run(coroutine -> {
       for (int i = 0; i < numberChanges; i++) {
         runKrakenAtVelocity();
@@ -156,8 +156,6 @@ public Command cycleKrakenSpeedDown(double rpmChange, int numberChanges) {
       }
     }).named("Cycle Kraken Speed Down");
   }
-
-
 
   public void clearFaults() {
     x60Motor.clearStickyFaults();

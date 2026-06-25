@@ -32,6 +32,7 @@ public class TeleopRunKraken extends PeriodicOpMode {
 
     robot.controller.southFace()
         .onTrue(Command.noRequirements(coro -> robot.kraken.setRunKraken(false)).named("Stop Kraken"));
+
     robot.controller.eastFace().onTrue(
         Command.noRequirements(coro -> robot.kraken.setTargetPosition(robot.kraken.getTargetPosition() + 20))
             .named("Position Kraken +20"))

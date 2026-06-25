@@ -47,7 +47,6 @@ public class Robot extends OpModeRobot {
   public Trigger startShooter = new Trigger(() -> DriverStationBackend.isEnabled() && shooter.isRunShooter());
   public Trigger startFeeder = new Trigger(() -> DriverStationBackend.isEnabled() && feeder.isRunFeeder());
   public Trigger startKraken = new Trigger(() -> DriverStationBackend.isEnabled() && kraken.isRunKraken());
-
   public Robot() {
     startShooter.onTrue(shooter.runShooterAtVelocityCommand());
     startShooter.onFalse(Command
@@ -64,6 +63,7 @@ public class Robot extends OpModeRobot {
         .noRequirements(coro -> Scheduler.getDefault().cancel(kraken.runKrakenAtVelocityCommand()))
         .named("Cancel Run Kraken"));
 
+ 
   }
 
   @Override
